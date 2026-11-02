@@ -1,0 +1,35 @@
+{
+  "app": {
+    "title": "Measure Image"
+  },
+  "upload": {
+    "prompt": "Upload an image to start measuring",
+    "button": "Choose image",
+    "replaceConfirm": "Replace the image? All measurements will be discarded."
+  },
+  "toolbar": {
+    "navigate": "Navigate",
+    "measure": "Measure",
+    "replaceImage": "Image",
+    "calibrate": "Calibrate",
+    "delete": "Delete",
+    "settings": "Settings",
+    "fit": "Fit"
+  },
+  "calibrate": {
+    "title": "Reference measurement",
+    "hint": "Enter the real-world length of this line. All other measurements are proportional to it.",
+    "lengthPlaceholder": "Length",
+    "confirm": "Set reference",
+    "skip": "Skip"
+  },
+  "selection": {
+    "color": "Line color",
+    "setReference": "Set as reference"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "unit": "Default unit"
+  }
+}

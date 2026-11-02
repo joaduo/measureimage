@@ -1,0 +1,35 @@
+{
+  "app": {
+    "title": "Medir Imagen"
+  },
+  "upload": {
+    "prompt": "Sube una imagen para empezar a medir",
+    "button": "Elegir imagen",
+    "replaceConfirm": "¿Reemplazar la imagen? Se descartarán todas las mediciones."
+  },
+  "toolbar": {
+    "navigate": "Navegar",
+    "measure": "Medir",
+    "replaceImage": "Imagen",
+    "calibrate": "Calibrar",
+    "delete": "Eliminar",
+    "settings": "Ajustes",
+    "fit": "Ajustar"
+  },
+  "calibrate": {
+    "title": "Medida de referencia",
+    "hint": "Ingresa la medida real de esta línea. Todas las demás mediciones son proporcionales a ella.",
+    "lengthPlaceholder": "Medida",
+    "confirm": "Establecer",
+    "skip": "Omitir"
+  },
+  "selection": {
+    "color": "Color de línea",
+    "setReference": "Usar como referencia"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "unit": "Unidad por defecto"
+  }
+}
