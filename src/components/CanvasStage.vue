@@ -4,12 +4,14 @@ import type Konva from 'konva'
 import { useImageStore } from '../stores/image'
 import { useMeasureStore, pixelLength } from '../stores/measure'
 import { useUiStore } from '../stores/ui'
+import { useSettingsStore } from '../stores/settings'
 import MeasureLineShape from './MeasureLineShape.vue'
 import type { Point } from '../types'
 
 const imageStore = useImageStore()
 const measure = useMeasureStore()
 const ui = useUiStore()
+const settings = useSettingsStore()
 
 const container = ref<HTMLDivElement | null>(null)
 const stageRef = ref<{ getNode: () => Konva.Stage } | null>(null)
@@ -66,6 +68,7 @@ function pointers(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>): Point[] {
 
 let prevPointers: Point[] = []
 let drawing = false
+let editing = false
 const draftA = ref<Point | null>(null)
 const draftB = ref<Point | null>(null)
 
@@ -108,6 +111,12 @@ function cancelDraft() {
 function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (e.evt instanceof TouchEvent) e.evt.preventDefault()
   const pts = pointers(e)
+  if (editing) return
+  if (pts.length === 1 && e.target !== getStage()) {
+    editing = true
+    prevPointers = []
+    return
+  }
   if (drawing && pts.length > 1) cancelDraft()
 
   if (!drawing && pts.length === 1 && ui.activeTool === 'measure') {
@@ -119,6 +128,7 @@ function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
 }
 
 function onPointerMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  if (editing) return
   if (e.evt instanceof TouchEvent) {
     e.evt.preventDefault()
   } else if (!(e.evt.buttons & 1)) {
@@ -148,7 +158,12 @@ function onPointerEnd(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   // For mouse, the gesture ends on mouseup/mouseleave; for touch, when no
   // fingers remain on screen
   const ended = !(e.evt instanceof TouchEvent) || e.evt.touches.length === 0
-  const pts = pointers(e)
+  if (editing) {
+    if (ended) editing = false
+    prevPointers = []
+    return
+  }
+  const pts = ended ? [] : pointers(e)
   if (drawing && ended && draftA.value && draftB.value) {
     if (pixelLength({ a: draftA.value, b: draftB.value }) >= MIN_LINE_PX / world.scale) {
       const line = measure.addLine(draftA.value, draftB.value)
@@ -246,7 +261,7 @@ const draftPoints = computed(() =>
             :config="{
               points: draftPoints,
               stroke: '#f59e0b',
-              strokeWidth: 3 / world.scale,
+              strokeWidth: settings.lineThickness,
               strokeScaleEnabled: false,
               dash: [8 / world.scale, 6 / world.scale],
               lineCap: 'round',

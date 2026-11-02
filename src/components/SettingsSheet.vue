@@ -22,7 +22,7 @@ const UNITS: Unit[] = ['mm', 'cm', 'm', 'in']
     @click.self="ui.settingsOpen = false"
   >
     <div
-      class="w-full max-w-sm rounded-t-2xl bg-gray-800 p-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] shadow-xl"
+      class="max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-t-2xl bg-gray-800 p-5 pb-[max(env(safe-area-inset-bottom),1.25rem)] shadow-xl"
     >
       <h2 class="mb-4 text-lg font-semibold">{{ t('settings.title') }}</h2>
 
@@ -51,6 +51,39 @@ const UNITS: Unit[] = ['mm', 'cm', 'm', 'in']
           {{ u }}
         </button>
       </div>
+
+      <label for="line-thickness" class="mt-4 mb-1 block text-sm text-gray-400">
+        {{ t('settings.lineThickness') }}: {{ settings.lineThickness }} px
+      </label>
+      <input
+        id="line-thickness"
+        type="range"
+        min="1"
+        max="12"
+        step="1"
+        :value="settings.lineThickness"
+        class="w-full accent-amber-500"
+        @input="settings.setDisplaySize('lineThickness', Number(($event.target as HTMLInputElement).value))"
+      />
+
+      <label for="label-size" class="mt-4 mb-1 block text-sm text-gray-400">
+        {{ t('settings.labelSize') }}: {{ settings.labelSize }} px
+      </label>
+      <input
+        id="label-size"
+        type="range"
+        min="10"
+        max="40"
+        step="1"
+        :value="settings.labelSize"
+        class="w-full accent-amber-500"
+        @input="settings.setDisplaySize('labelSize', Number(($event.target as HTMLInputElement).value))"
+      />
+
+      <label class="mt-4 flex items-center gap-3 text-sm">
+        <input v-model="settings.selectedLabelOnly" type="checkbox" class="size-5 accent-amber-500" />
+        {{ t('settings.selectedLabelOnly') }}
+      </label>
     </div>
   </div>
 </template>

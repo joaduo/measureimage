@@ -33,6 +33,9 @@
   "settings": {
     "title": "Ajustes",
     "language": "Idioma",
-    "unit": "Unidad por defecto"
+    "unit": "Unidad por defecto",
+    "lineThickness": "Line thickness",
+    "labelSize": "Label size",
+    "selectedLabelOnly": "Show label only for selected line"
   }
 }
