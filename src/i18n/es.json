@@ -24,11 +24,14 @@
     "hint": "Ingresa la medida real de esta línea. Todas las demás mediciones son proporcionales a ella.",
     "lengthPlaceholder": "Medida",
     "confirm": "Establecer",
-    "skip": "Omitir"
+    "skip": "Omitir",
+    "pixelHint": "Image length: {length} px. Enter its known real-world length."
   },
   "selection": {
     "color": "Color de línea",
-    "setReference": "Usar como referencia"
+    "setReference": "Usar como referencia",
+    "referenceWarning": "Reference line: changing its length updates all other measurements.",
+    "referenceDeleteHint": "Calibrate another line before deleting the reference."
   },
   "settings": {
     "title": "Ajustes",

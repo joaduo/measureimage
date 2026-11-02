@@ -16,6 +16,76 @@ describe('pixelLength', () => {
 })
 
 describe('measure store', () => {
+  it('preserves the precise scale during provisional reference switching and rolls back', () => {
+    const store = useMeasureStore()
+    const first = store.addLine(p(0, 0), p(100, 0))
+    const second = store.addLine(p(0, 0), p(33, 0))
+    store.calibration = { lineId: first.id, realLength: 7, unit: 'cm' }
+    const previous = { ...store.calibration }
+    expect(store.beginCalibration(second.id)).toBe(true)
+    expect(store.calibration?.realLength).toBeCloseTo(2.31, 12)
+    expect(store.referenceLineId).toBe(second.id)
+    expect(store.scaleFactor).toBeCloseTo(0.07, 12)
+    store.cancelCalibration()
+    expect(store.calibration).toEqual(previous)
+    expect(store.referenceLineId).toBe(first.id)
+  })
+
+  it('marks the first candidate without inventing a real-world scale', () => {
+    const store = useMeasureStore()
+    const line = store.addLine(p(0, 0), p(100, 0))
+    expect(store.beginCalibration(line.id)).toBe(true)
+    expect(store.referenceLineId).toBe(line.id)
+    expect(store.scaleFactor).toBeNull()
+    store.cancelCalibration()
+    expect(store.referenceLineId).toBeNull()
+    store.beginCalibration(line.id)
+    expect(store.confirmCalibration(5, 'cm')).toBe(true)
+    expect(store.scaleFactor).toBe(0.05)
+  })
+
+  it('protects the reference until a replacement is confirmed', () => {
+    const store = useMeasureStore()
+    const first = store.addLine(p(0, 0), p(100, 0))
+    const second = store.addLine(p(0, 0), p(200, 0))
+    store.calibration = { lineId: first.id, realLength: 5, unit: 'cm' }
+    expect(store.removeLine(first.id)).toBe(false)
+    store.beginCalibration(second.id)
+    expect(store.removeLine(first.id)).toBe(false)
+    expect(store.updateLine(second.id, { b: p(10, 0) })).toBe(false)
+    expect(store.confirmCalibration(20, 'm')).toBe(true)
+    expect(store.removeLine(first.id)).toBe(true)
+    expect(store.calibration).toEqual({ lineId: second.id, realLength: 20, unit: 'm' })
+  })
+
+  it('rejects invalid calibration and reference collapse while allowing translation', () => {
+    const store = useMeasureStore()
+    const line = store.addLine(p(0, 0), p(100, 0))
+    const zero = store.addLine(p(0, 0), p(0, 0))
+    expect(store.beginCalibration('missing')).toBe(false)
+    expect(store.beginCalibration(zero.id)).toBe(false)
+    store.beginCalibration(line.id)
+    for (const value of [0, -1, NaN, Infinity]) expect(store.confirmCalibration(value, 'cm')).toBe(false)
+    expect(store.confirmCalibration(10, 'cm')).toBe(true)
+    expect(store.updateLine(line.id, { b: p(0, 0) })).toBe(false)
+    expect(store.lines[0]!.b).toEqual(p(100, 0))
+    store.updateLine(line.id, { b: p(200, 0) })
+    expect(store.scaleFactor).toBe(0.05)
+    store.updateLine(line.id, { a: p(10, 20), b: p(210, 20) })
+    expect(store.scaleFactor).toBe(0.05)
+  })
+
+  it('reset discards pending calibration without restoring a stale reference', () => {
+    const store = useMeasureStore()
+    const line = store.addLine(p(0, 0), p(10, 0))
+    store.calibration = { lineId: line.id, realLength: 2, unit: 'cm' }
+    store.beginCalibration(line.id)
+    store.reset()
+    store.cancelCalibration()
+    expect(store.calibration).toBeNull()
+    expect(store.pendingCalibration).toBeNull()
+  })
+
   it('addLine assigns unique ids, cycles colors and selects the new line', () => {
     const store = useMeasureStore()
     const ids = new Set<string>()
@@ -38,11 +108,10 @@ describe('measure store', () => {
     expect(store.lines[0]!.color).toBe('#ffffff')
   })
 
-  it('removeLine deletes the line and clears selection, endpoint and calibration', () => {
+  it('removeLine deletes an ordinary line and clears selection and endpoint', () => {
     const store = useMeasureStore()
     const line = store.addLine(p(0, 0), p(10, 0))
     store.selectEndpoint(line.id, 'a')
-    store.calibration = { lineId: line.id, realLength: 5, unit: 'cm' }
     store.removeLine(line.id)
     expect(store.lines).toHaveLength(0)
     expect(store.selectedLineId).toBeNull()

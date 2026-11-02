@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import type Konva from 'konva'
 import { useImageStore } from '../stores/image'
-import { useMeasureStore, pixelLength } from '../stores/measure'
+import { LINE_DASH, useMeasureStore, pixelLength } from '../stores/measure'
 import { useUiStore } from '../stores/ui'
 import { useSettingsStore } from '../stores/settings'
 import MeasureLineShape from './MeasureLineShape.vue'
@@ -125,6 +125,7 @@ function cancelDraft() {
 // --- event handlers ------------------------------------------------------
 
 function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  if (ui.calibrationLineId) return
   if (e.evt instanceof TouchEvent) e.evt.preventDefault()
   const pts = pointers(e)
   suppressTap = false
@@ -152,7 +153,7 @@ function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
 }
 
 function onPointerMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
-  if (editing) return
+  if (editing || ui.calibrationLineId) return
   if (e.evt instanceof TouchEvent) {
     e.evt.preventDefault()
   } else if (!(e.evt.buttons & 1)) {
@@ -214,11 +215,13 @@ function onPointerEnd(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
 function onStageTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   // Tapping empty canvas (not a line) clears the selection
   const stage = getStage()
+  if (ui.calibrationLineId) return
   if (!suppressTap && stage && e.target === stage) measure.select(null)
 }
 
 function onWheel(e: Konva.KonvaEventObject<WheelEvent>) {
   e.evt.preventDefault()
+  if (ui.calibrationLineId) return
   const stage = getStage()
   const pointer = stage?.getPointerPosition()
   if (!pointer) return
@@ -296,11 +299,23 @@ const draftPoints = computed(() =>
             v-if="draftPoints.length"
             :config="{
               points: draftPoints,
+              stroke: '#111827',
+              strokeWidth: settings.lineThickness + 4,
+              strokeScaleEnabled: false,
+              dash: LINE_DASH,
+              lineCap: 'butt',
+              listening: false,
+            }"
+          />
+          <v-line
+            v-if="draftPoints.length"
+            :config="{
+              points: draftPoints,
               stroke: '#f59e0b',
               strokeWidth: settings.lineThickness,
               strokeScaleEnabled: false,
-              dash: [8 / world.scale, 6 / world.scale],
-              lineCap: 'round',
+              dash: LINE_DASH,
+              lineCap: 'butt',
               listening: false,
             }"
           />

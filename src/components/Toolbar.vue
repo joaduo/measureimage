@@ -90,7 +90,7 @@ const off = 'text-gray-600'
         <button :class="[btn, measure.selectedLineId ? idle : off]" :disabled="!measure.selectedLineId" @click="ui.runAction(() => { if (measure.selectedLineId) ui.calibrationLineId = measure.selectedLineId })">
           ⌖<span>{{ t('toolbar.calibrate') }}</span>
         </button>
-        <button :class="[btn, measure.selectedLineId ? idle : off]" :disabled="!measure.selectedLineId" @click="ui.runAction(() => { if (measure.selectedLineId) measure.removeLine(measure.selectedLineId) })">
+        <button :class="[btn, measure.selectedLineId && !measure.selectedIsReference ? idle : off]" :disabled="!measure.selectedLineId || measure.selectedIsReference || !!measure.pendingCalibration" :title="measure.selectedIsReference ? t('selection.referenceDeleteHint') : t('toolbar.delete')" @click="ui.runAction(() => { if (measure.selectedLineId) measure.removeLine(measure.selectedLineId) })">
           🗑<span>{{ t('toolbar.delete') }}</span>
         </button>
         <label :class="[btn, 'cursor-pointer', idle]">

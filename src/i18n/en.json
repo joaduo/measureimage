@@ -24,11 +24,14 @@
     "hint": "Enter the real-world length of this line. All other measurements are proportional to it.",
     "lengthPlaceholder": "Length",
     "confirm": "Set reference",
-    "skip": "Skip"
+    "skip": "Skip",
+    "pixelHint": "Image length: {length} px. Enter its known real-world length."
   },
   "selection": {
     "color": "Line color",
-    "setReference": "Set as reference"
+    "setReference": "Set as reference",
+    "referenceWarning": "Reference line: changing its length updates all other measurements.",
+    "referenceDeleteHint": "Calibrate another line before deleting the reference."
   },
   "settings": {
     "title": "Settings",

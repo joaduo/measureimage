@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import type Konva from 'konva'
 import type { MeasureLine } from '../types'
 import { useScale } from '../composables/useScale'
-import { useMeasureStore } from '../stores/measure'
+import { LINE_DASH, ordinaryColor, REFERENCE_COLOR, useMeasureStore } from '../stores/measure'
 import { useSettingsStore } from '../stores/settings'
 
 const props = defineProps<{
@@ -17,6 +17,10 @@ const { formatLength } = useScale()
 const measure = useMeasureStore()
 
 const settings = useSettingsStore()
+const isReference = computed(() => measure.referenceLineId === props.line.id)
+const color = computed(() => isReference.value ? REFERENCE_COLOR : ordinaryColor(props.line.color))
+const dash = computed(() => isReference.value ? [] : LINE_DASH)
+const lineCap = computed(() => isReference.value ? 'round' : 'butt')
 const dragOrigin = ref<Pick<MeasureLine, 'a' | 'b'> | null>(null)
 const points = computed(() => {
   const { a, b } = dragOrigin.value ?? props.line
@@ -47,7 +51,9 @@ function pressEndpoint(key: 'a' | 'b', e: Konva.KonvaEventObject<MouseEvent | To
 
 function dragEndpoint(key: 'a' | 'b', e: Konva.KonvaEventObject<DragEvent>) {
   const p = e.target.position()
-  measure.updateLine(props.line.id, { [key]: { x: p.x, y: p.y } })
+  if (!measure.updateLine(props.line.id, { [key]: { x: p.x, y: p.y } })) {
+    e.target.position(props.line[key])
+  }
 }
 
 function startBodyDrag() {
@@ -79,19 +85,22 @@ function endBodyDrag(e: Konva.KonvaEventObject<DragEvent>) {
       stroke: '#111827',
       strokeWidth: strokeWidth + 4,
       strokeScaleEnabled: false,
-      lineCap: 'round',
+      lineCap,
+      dash,
       listening: false,
     }"
   />
   <v-line
     :config="{
       points,
-      stroke: line.color,
+      stroke: color,
       strokeWidth,
       hitStrokeWidth: hitWidth,
       strokeScaleEnabled: false,
-      lineCap: 'round',
-      draggable: selected,
+      lineCap,
+      dash,
+      draggable: selected && !measure.pendingCalibration,
+      listening: !measure.pendingCalibration,
       shadowColor: '#000',
       shadowBlur: selected ? 6 / worldScale : 0,
       shadowOpacity: 0.6,
@@ -111,10 +120,11 @@ function endBodyDrag(e: Konva.KonvaEventObject<DragEvent>) {
         y: line[key].y,
         radius: handleRadius,
         fill: '#ffffff',
-        stroke: line.color,
+        stroke: color,
         strokeWidth: 2,
         strokeScaleEnabled: false,
-        draggable: true,
+        draggable: !measure.pendingCalibration,
+        listening: !measure.pendingCalibration,
       }"
       @mousedown="pressEndpoint(key, $event)"
       @touchstart="pressEndpoint(key, $event)"
@@ -133,7 +143,7 @@ function endBodyDrag(e: Konva.KonvaEventObject<DragEvent>) {
       text: label,
       fontSize,
       fontStyle: 'bold',
-      fill: selected ? '#ffffff' : line.color,
+      fill: selected ? '#ffffff' : color,
       stroke: '#111827',
       strokeWidth: 4 / worldScale,
       fillAfterStrokeEnabled: true,
