@@ -36,6 +36,8 @@
     "unit": "Default unit",
     "lineThickness": "Line thickness",
     "labelSize": "Label size",
-    "selectedLabelOnly": "Show label only for selected line"
+    "selectedLabelOnly": "Show label only for selected line",
+    "magnifierZoom": "Magnifier zoom",
+    "magnifierSize": "Magnifier size"
   }
 }

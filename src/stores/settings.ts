@@ -18,5 +18,19 @@ export const useSettingsStore = defineStore('settings', () => {
     else labelSize.value = Math.max(10, Math.min(40, Math.round(value)))
   }
 
-  return { locale, unit, lineThickness, labelSize, selectedLabelOnly, setDisplaySize }
+  const magnifierZoom = ref(4)
+  const magnifierSize = ref(200)
+
+  function setMagnifierZoom(value: number) {
+    if ([2, 4, 8].includes(value)) magnifierZoom.value = value
+  }
+
+  function setMagnifierSize(value: number) {
+    if (Number.isFinite(value)) magnifierSize.value = Math.max(120, Math.min(320, Math.round(value)))
+  }
+
+  return {
+    locale, unit, lineThickness, labelSize, selectedLabelOnly, setDisplaySize,
+    magnifierZoom, magnifierSize, setMagnifierZoom, setMagnifierSize,
+  }
 })

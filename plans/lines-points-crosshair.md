@@ -130,5 +130,5 @@ The options, default, and relative-versus-image-space interpretation require con
 1. Should zoom be relative to the main canvas or fixed relative to the original image? relative to the main canvas
    Are 2×, 4×, and 8× with a 4× default suitable? YES
 2. Are the proposed endpoint deselection rules appropriate, including clearing selection on tool changes? YES
-3. After drawing a line, should its final endpoint remain selected, keeping the magnifier visible?
-4. Is a 160 × 160 pixel viewport suitable, or should it be larger or configurable?
+3. After drawing a line, should its final endpoint remain selected, keeping the magnifier visible? YES
+4. Is a 160 × 160 pixel viewport suitable, or should it be larger or configurable? Configurable 200x200 default

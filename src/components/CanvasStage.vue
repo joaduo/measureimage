@@ -6,6 +6,7 @@ import { useMeasureStore, pixelLength } from '../stores/measure'
 import { useUiStore } from '../stores/ui'
 import { useSettingsStore } from '../stores/settings'
 import MeasureLineShape from './MeasureLineShape.vue'
+import EndpointMagnifier from './EndpointMagnifier.vue'
 import type { Point } from '../types'
 
 const imageStore = useImageStore()
@@ -71,6 +72,21 @@ let drawing = false
 let editing = false
 const draftA = ref<Point | null>(null)
 const draftB = ref<Point | null>(null)
+const magnifierTarget = computed(() => draftB.value ?? measure.selectedEndpointPosition)
+const magnifierSize = computed(() => Math.max(1, Math.min(settings.magnifierSize, size.width - 96, size.height - 128)))
+let suppressTap = false
+
+watch(() => ui.activeTool, () => {
+  measure.selectedEndpoint = null
+  cancelDraft()
+  prevPointers = []
+}, { flush: 'sync' })
+watch(() => imageStore.element, () => {
+  measure.selectedEndpoint = null
+  cancelDraft()
+  editing = false
+  prevPointers = []
+})
 
 function centroid(pts: Point[]): Point {
   const n = pts.length || 1
@@ -111,7 +127,14 @@ function cancelDraft() {
 function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (e.evt instanceof TouchEvent) e.evt.preventDefault()
   const pts = pointers(e)
-  if (editing) return
+  suppressTap = false
+  if (editing) {
+    if (pts.length > 1) {
+      getStage()?.find((node: Konva.Node) => node.draggable()).forEach((node) => node.stopDrag())
+      suppressTap = true
+    }
+    return
+  }
   if (pts.length === 1 && e.target !== getStage()) {
     editing = true
     prevPointers = []
@@ -120,6 +143,7 @@ function onPointerStart(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (drawing && pts.length > 1) cancelDraft()
 
   if (!drawing && pts.length === 1 && ui.activeTool === 'measure') {
+    measure.selectedEndpoint = null
     drawing = true
     draftA.value = screenToWorld(pts[0]!)
     draftB.value = draftA.value
@@ -146,15 +170,25 @@ function onPointerMove(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (drawing && pts.length > 1) cancelDraft()
 
   if (prevPointers.length === 1 && pts.length === 1) {
+    if (pts[0]!.x !== prevPointers[0]!.x || pts[0]!.y !== prevPointers[0]!.y) suppressTap = true
     world.x += pts[0]!.x - prevPointers[0]!.x
     world.y += pts[0]!.y - prevPointers[0]!.y
   } else if (prevPointers.length >= 2 && pts.length >= 2) {
+    suppressTap = true
     applyTwoPointer(prevPointers, pts)
   }
   prevPointers = pts
 }
 
 function onPointerEnd(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  if (e.evt.type === 'touchcancel') {
+    cancelDraft()
+    getStage()?.find((node: Konva.Node) => node.draggable()).forEach((node) => node.stopDrag())
+    editing = false
+    prevPointers = []
+    suppressTap = true
+    return
+  }
   // For mouse, the gesture ends on mouseup/mouseleave; for touch, when no
   // fingers remain on screen
   const ended = !(e.evt instanceof TouchEvent) || e.evt.touches.length === 0
@@ -167,6 +201,8 @@ function onPointerEnd(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   if (drawing && ended && draftA.value && draftB.value) {
     if (pixelLength({ a: draftA.value, b: draftB.value }) >= MIN_LINE_PX / world.scale) {
       const line = measure.addLine(draftA.value, draftB.value)
+      measure.selectEndpoint(line.id, 'b')
+      suppressTap = true
       // The first committed line proposes itself as the reference
       if (!measure.calibration) ui.calibrationLineId = line.id
     }
@@ -178,7 +214,7 @@ function onPointerEnd(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
 function onStageTap(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   // Tapping empty canvas (not a line) clears the selection
   const stage = getStage()
-  if (stage && e.target === stage) measure.select(null)
+  if (!suppressTap && stage && e.target === stage) measure.select(null)
 }
 
 function onWheel(e: Konva.KonvaEventObject<WheelEvent>) {
@@ -271,5 +307,13 @@ const draftPoints = computed(() =>
         </v-group>
       </v-layer>
     </v-stage>
+    <EndpointMagnifier
+      v-if="imageStore.element && magnifierTarget && !ui.calibrationLineId"
+      :image="imageStore.element"
+      :target="magnifierTarget"
+      :scale="world.scale * settings.magnifierZoom"
+      :rotation="world.rotation"
+      :size="magnifierSize"
+    />
   </div>
 </template>

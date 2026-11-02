@@ -40,12 +40,18 @@ function select(e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
   measure.select(props.line.id)
 }
 
+function pressEndpoint(key: 'a' | 'b', e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+  if ('touches' in e.evt && e.evt.touches.length > 1) return
+  measure.selectEndpoint(props.line.id, key)
+}
+
 function dragEndpoint(key: 'a' | 'b', e: Konva.KonvaEventObject<DragEvent>) {
   const p = e.target.position()
   measure.updateLine(props.line.id, { [key]: { x: p.x, y: p.y } })
 }
 
 function startBodyDrag() {
+  measure.selectedEndpoint = null
   dragOrigin.value = { a: { ...props.line.a }, b: { ...props.line.b } }
 }
 
@@ -110,6 +116,10 @@ function endBodyDrag(e: Konva.KonvaEventObject<DragEvent>) {
         strokeScaleEnabled: false,
         draggable: true,
       }"
+      @mousedown="pressEndpoint(key, $event)"
+      @touchstart="pressEndpoint(key, $event)"
+      @click="$event.cancelBubble = true"
+      @tap="$event.cancelBubble = true"
       @dragmove="dragEndpoint(key, $event)"
     />
   </template>

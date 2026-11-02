@@ -80,6 +80,36 @@ const UNITS: Unit[] = ['mm', 'cm', 'm', 'in']
         @input="settings.setDisplaySize('labelSize', Number(($event.target as HTMLInputElement).value))"
       />
 
+      <fieldset class="mt-4">
+        <legend class="mb-2 text-sm text-gray-400">{{ t('settings.magnifierZoom') }}</legend>
+        <div class="flex gap-2">
+          <button
+            v-for="zoom in [2, 4, 8]"
+            :key="zoom"
+            :aria-pressed="settings.magnifierZoom === zoom"
+            class="flex-1 rounded-lg py-2"
+            :class="settings.magnifierZoom === zoom ? 'bg-amber-500 text-gray-900 font-medium' : 'bg-gray-700 text-gray-300'"
+            @click="settings.setMagnifierZoom(zoom)"
+          >
+            {{ zoom }}×
+          </button>
+        </div>
+      </fieldset>
+
+      <label for="magnifier-size" class="mt-4 mb-1 block text-sm text-gray-400">
+        {{ t('settings.magnifierSize') }}: {{ settings.magnifierSize }} × {{ settings.magnifierSize }} px
+      </label>
+      <input
+        id="magnifier-size"
+        type="range"
+        min="120"
+        max="320"
+        step="10"
+        :value="settings.magnifierSize"
+        class="w-full accent-amber-500"
+        @input="settings.setMagnifierSize(Number(($event.target as HTMLInputElement).value))"
+      />
+
       <label class="mt-4 flex items-center gap-3 text-sm">
         <input v-model="settings.selectedLabelOnly" type="checkbox" class="size-5 accent-amber-500" />
         {{ t('settings.selectedLabelOnly') }}
