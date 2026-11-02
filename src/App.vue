@@ -28,11 +28,11 @@ watch(
     <UploadScreen v-if="!imageStore.element" />
     <template v-else>
       <CanvasStage />
+      <Toolbar />
       <div
         class="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 pb-[max(env(safe-area-inset-bottom),0.75rem)]"
       >
         <SelectionBar />
-        <Toolbar />
       </div>
       <CalibrationDialog />
       <SettingsSheet />

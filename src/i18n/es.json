@@ -14,7 +14,10 @@
     "calibrate": "Calibrar",
     "delete": "Eliminar",
     "settings": "Ajustes",
-    "fit": "Ajustar"
+    "fit": "Ajustar",
+    "pin": "Fijar barra",
+    "unpin": "Desfijar barra",
+    "openTools": "Abrir herramientas"
   },
   "calibrate": {
     "title": "Medida de referencia",

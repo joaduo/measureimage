@@ -14,7 +14,10 @@
     "calibrate": "Calibrate",
     "delete": "Delete",
     "settings": "Settings",
-    "fit": "Fit"
+    "fit": "Fit",
+    "pin": "Pin toolbar",
+    "unpin": "Unpin toolbar",
+    "openTools": "Open tools"
   },
   "calibrate": {
     "title": "Reference measurement",
