@@ -1,6 +1,8 @@
 .devin/
 .idea/
 .wrangler/
+.DS_Store
+.env*
 
 temp/
 
