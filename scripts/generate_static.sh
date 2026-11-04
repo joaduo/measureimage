@@ -18,18 +18,10 @@ echo "🏗️  Building frontend..."
 rm -Rf dist
 npm run build
 
-DOWNLOAD_COUNT=0
-if [ -f "download_count.txt" ]; then
-    DOWNLOAD_COUNT=$(cat download_count.txt)
-fi
-DOWNLOAD_COUNT=$((DOWNLOAD_COUNT + 1))
-echo $DOWNLOAD_COUNT > download_count.txt
-
 # Add some versioning information (git hash)
 echo "{
     \"git_version\": \"$(git rev-parse HEAD)\",
-    \"build_time\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",
-    \"download_count\": $DOWNLOAD_COUNT
+    \"build_time\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"
 }" > dist/version.json
 
 echo "✅ Static files generated successfully in dist/ directory"
